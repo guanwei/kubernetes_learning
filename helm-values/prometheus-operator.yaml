@@ -1,0 +1,100 @@
+defaultRules:
+  rules:
+    etcd: false
+
+alertmanager:
+  alertmanagerSpec:
+    storage:
+      volumeClaimTemplate:
+        spec:
+          ## You can specify storageClassName, like using alicloud nas.
+          # storageClassName: "alicloud-nas"
+          resources:
+            requests:
+              storage: 10Gi
+    externalUrl: http://localhost/alertmanager
+  ingress:
+    enabled: true
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+    paths:
+      - /alertmanager(/|$)(.*)
+
+prometheus:
+  prometheusSpec:
+    ruleSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          ## You can specify storageClassName, like using alicloud nas.
+          # storageClassName: "alicloud-nas"
+          resources:
+            requests:
+              storage: 10Gi
+    externalUrl: http://localhost/prometheus
+  ingress:
+    enabled: true
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+    paths:
+      - /prometheus(/|$)(.*)
+
+grafana:
+  adminPassword: admin
+  sidecar:
+    skipTlsVerify: true
+  env:
+    GF_SERVER_ROOT_URL: "%(protocol)s://%(domain)s/grafana"
+  ingress:
+    enabled: true
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+    hosts:
+      - ""
+    path: /grafana(/|$)(.*)
+  persistence:
+    enabled: true
+    ## You can specify storageClassName, like using alicloud nas.
+    # storageClassName: "alicloud-nas"
+    size: 10Gi
+  ## If you want install aliyun logservice plugin, can enable it.
+  # extraInitContainers:
+  #   - name: install-aliyun-log-grafana-datasource-plugin
+  #     image: alpine/git
+  #     imagePullPolicy: IfNotPresent
+  #     command:
+  #       - sh
+  #       - -c
+  #       - |
+  #         #!/usr/bin/env bash -e
+  #         URL=https://code.aliyun.com/cdi-hsc/aliyun-log-grafana-datasource-plugin.git
+  #         FOLDER=/var/lib/grafana/plugins/aliyun-log-grafana-datasource-plugin
+  #         if [ ! -d $FOLDER ]; then
+  #           git clone --depth=1 $URL $FOLDER
+  #         else
+  #           cd $FOLDER
+  #           git pull
+  #         fi
+  #     volumeMounts:
+  #       - name: storage
+  #         mountPath: "/var/lib/grafana"
+
+kubelet:
+  serviceMonitor:
+    https: false
+
+kubeEtcd:
+  enabled: false
+  serviceMonitor:
+    insecureSkipVerify: true
+
+kubeProxy:
+  enabled: false
+
+kubeControllerManager:
+  enabled: false
+
+kubeScheduler:
+  enabled: false
