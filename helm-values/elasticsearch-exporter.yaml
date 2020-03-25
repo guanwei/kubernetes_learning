@@ -1,0 +1,6 @@
+es:
+  uri: https://elastic:elastic@elasticsearch-master.logging:9200
+  sslSkipVerify: true
+
+serviceMonitor:
+  enabled: true
